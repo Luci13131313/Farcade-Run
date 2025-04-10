@@ -1,0 +1,879 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Farcade Boy</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background: #111;
+        font-family: "Segoe UI", sans-serif;
+      }
+
+      #game-container {
+        max-width: 400px;
+        width: 100%;
+        position: relative;
+      }
+
+      canvas {
+        display: block;
+        background: #fff;
+        width: 100%;
+        height: auto;
+      }
+
+      /* 🎮 Start Screen */
+      #start-screen {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(to bottom, #aeefff, #ffffff);
+        box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.1);
+        color: #000;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        z-index: 10;
+        text-align: center;
+        padding: 20px;
+      }
+
+      #start-screen h1 {
+        font-size: 36px;
+        font-weight: bold;
+        margin-bottom: 20px;
+      }
+
+      #start-screen p {
+        font-size: 16px;
+        margin-bottom: 30px;
+        line-height: 1.6;
+        max-width: 300px;
+      }
+
+      #start-button {
+        padding: 12px 28px;
+        font-size: 18px;
+        background: white;
+        color: black;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        transition: all 0.3s ease;
+      }
+
+      #start-button:hover {
+        background: #222;
+        color: white;
+      }
+
+      /* 💀 Game Over */
+      #game-over-screen {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.95);
+        color: white;
+        display: none;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        z-index: 11;
+      }
+
+      #game-over-screen button {
+        padding: 10px 20px;
+        font-size: 18px;
+        margin-top: 10px;
+        background: #333;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+      }
+
+      #game-over-screen button:hover {
+        background: #555;
+      }
+    </style>
+
+    <!-- Farcade SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@farcade/game-sdk@latest/dist/index.min.js"></script>
+  </head>
+  <body>
+    <div id="game-container">
+      <canvas id="game"></canvas>
+      <div id="start-screen">
+        <h1>Farcade Boy: <span style="font-weight: normal">The Run</span></h1>
+       <div id="start-screen">
+        <h1>Farcade Boy: <span style="font-weight: normal">The Run</span></h1>
+        <div style="margin: 12px 0; font-size: 14px; line-height: 1.6; text-align: center;">
+          🟡 <b>Star</b>: Speed boost<br>
+          ⚫ <b>Dark Star</b>: Double speed boost<br>
+          🎮 <b>Farcade Logo</b>: Grants extra life<br>
+          🕹️ <b>Double Jump</b>: You can jump twice in a row!<br>
+          🎯 <b>Goal</b>: Jump (Space or Tap) to avoid obstacles and run as far as you can.<br>
+        </div>
+        <button id="start-button" disabled>Start the Run</button>
+      </div>
+    </div>
+
+    <script>
+      const soundVolumes = {
+        bgm: 0.3,
+        hit: 0.2,
+        gameover: 0.4,
+        coin: 0.5,
+        star: 0.2,
+        crowd: 0.4,
+        jump: 0.1,
+      };
+
+      const sounds = {
+        bgm: new Audio("https://raw.githubusercontent.com/Luci13131313/Farcade-Run/main/assets/sounds/FRbgs.mp3"),
+        hit: new Audio("https://raw.githubusercontent.com/Luci13131313/Farcade-Run/main/assets/sounds/hit.mp3"),
+        gameover: new Audio(
+          "https://raw.githubusercontent.com/Luci13131313/Farcade-Run/main/assets/sounds/gameover.mp3",
+        ),
+        coin: new Audio("https://raw.githubusercontent.com/Luci13131313/Farcade-Run/main/assets/sounds/coin.mp3"),
+        star: new Audio("https://raw.githubusercontent.com/Luci13131313/Farcade-Run/main/assets/sounds/star.mp3"),
+        crowd: new Audio("https://raw.githubusercontent.com/Luci13131313/Farcade-Run/main/assets/sounds/crowd.mp3"),
+        darkstar: new Audio(
+          "https://raw.githubusercontent.com/Luci13131313/Farcade-Run/main/assets/sounds/darkstar.mp3",
+        ),
+        jump: new Audio("https://raw.githubusercontent.com/Luci13131313/Farcade-Run/main/assets/sounds/jump.mp3"),
+      };
+
+      sounds.jump.volume = 0.3;
+      sounds.darkstar.volume = 0.4;
+      sounds.star.volume = 0.3;
+      sounds.hit.volume = 0.3;
+      sounds.bgm.loop = true;
+      sounds.bgm.volume = 0.3;
+      let isMuted = false;
+
+      function playSound(name) {
+        if (isMuted || !sounds[name]) return;
+        const sfx = sounds[name].cloneNode();
+        sfx.volume = soundVolumes[name] ?? 0.4;
+        sfx.play();
+      }
+
+      const canvas = document.getElementById("game");
+      const ctx = canvas.getContext("2d");
+      canvas.width = 640;
+      canvas.height = 640;
+
+      const logo = new Image();
+      logo.src = "https://github.com/Luci13131313/Farcade-Run/blob/main/logo.png?raw=true";
+
+      const tribuneSprite = new Image();
+      tribuneSprite.src = "https://github.com/Luci13131313/Farcade-Run/blob/main/cheering_crowd.png?raw=true";
+      const player = {
+        x: 500,
+        y: 480,
+        torsoLength: 20,
+        legLength: 20,
+        armLength: 20,
+        footSize: 6,
+        velocityY: 0,
+        isJumping: false,
+      };
+
+      let jumpCount = 0;
+      let timeOfDay = 0; // 0-1 arası dönen zaman
+      let isDay = true;
+
+      const maxJump = 2;
+
+      const colors = ["blue", "red", "green", "purple", "yellow", "pink"];
+
+      const neonColors = [
+        "#FF6EC7", // Neon Pink
+        "#39FF14", // Neon Green
+        "#1F51FF", // Neon Blue
+        "#00FFFF", // Electric Cyan
+        "#FF3131", // Bright Red
+        "#D900FF", // Neon Purple
+        "#FFFF33", // Bright Yellow
+      ];
+
+      const tribuneFrameCount = 16;
+      const tribuneFrameWidth = 240;
+      const tribuneFrameHeight = 240;
+      let tribuneFrameIndex = 0;
+      let tribuneFrameTimer = 1;
+      let baseTribuneDelay = 100;
+
+      const obstacles = [];
+      let obstacleTimer = 0;
+
+      let angle = 0;
+      let gravity = 0.46;
+
+      const clouds = [
+        { x: 50, y: 100 },
+        { x: 200, y: 60 },
+        { x: 320, y: 130 },
+      ];
+
+      const birds = [
+        { x: 300, y: 80 },
+        { x: 100, y: 150 },
+      ];
+
+      let obstacleCount = 0;
+      const baseSpeed = 4;
+      let gameSpeed = baseSpeed;
+
+      let roadOffset = 0;
+      let distance = 0;
+      let isGameOver = false;
+      let damageCooldown = 0;
+      let ghostOpacity = 1;
+      let rebirthTimer = 0;
+      let isBlinking = false;
+      let lives = 3;
+      let speedBoostTimer = 0;
+      let lastCrowdFrame = -1;
+      let darkBoostTimer = 0;
+      let darkBoostedSpeed = 8;
+      let bonusMessage = "";
+      let bonusMessageTimer = 0;
+      let currentSkyColor = "#aeefff"; // Güncel gökyüzü rengi tutulacak
+
+      let assetsLoaded = 0;
+
+      function checkStart() {
+        assetsLoaded++;
+        if (assetsLoaded === 2) {
+          document.getElementById("start-button").disabled = false;
+        }
+      }
+
+      logo.onload = checkStart;
+      tribuneSprite.onload = function () {
+        tribuneLoaded = true;
+        checkStart();
+      };
+
+      function drawHead() {
+        ctx.save();
+        ctx.globalAlpha = ghostOpacity;
+
+        const headSize = 80;
+        const offsetY = -15;
+
+        ctx.translate(player.x, player.y - player.torsoLength - headSize / 2 - offsetY);
+        ctx.drawImage(logo, -headSize / 2, -headSize / 2, headSize, headSize);
+
+        ctx.restore();
+      }
+
+      function drawTorso() {
+        ctx.save();
+        ctx.globalAlpha = ghostOpacity;
+        ctx.strokeStyle = "#000";
+        ctx.lineWidth = 3;
+
+        const torsoTopY = player.y - player.torsoLength;
+        ctx.beginPath();
+        ctx.moveTo(player.x, torsoTopY);
+        ctx.lineTo(player.x, player.y);
+        ctx.stroke();
+        ctx.restore();
+        return torsoTopY;
+      }
+
+      function drawArms(torsoTopY) {
+        ctx.save();
+        ctx.globalAlpha = ghostOpacity;
+        ctx.strokeStyle = "#000";
+        ctx.lineWidth = 3;
+        const swing = Math.sin(angle) * 10;
+        const lift = Math.cos(angle) * 5;
+
+        ctx.beginPath();
+        ctx.moveTo(player.x, torsoTopY + 5);
+        ctx.lineTo(player.x + swing, torsoTopY + player.armLength + lift);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(player.x, torsoTopY + 5);
+        ctx.lineTo(player.x - swing, torsoTopY + player.armLength - lift);
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      function drawLegs() {
+        ctx.save();
+        ctx.globalAlpha = ghostOpacity;
+        ctx.strokeStyle = "#000";
+        ctx.lineWidth = 3;
+
+        const swing = Math.sin(angle) * 10;
+
+        ctx.beginPath();
+        ctx.moveTo(player.x, player.y);
+        ctx.lineTo(player.x - swing, player.y + player.legLength);
+        ctx.stroke();
+
+        ctx.fillStyle = "#000";
+        ctx.beginPath();
+        ctx.arc(player.x - swing, player.y + player.legLength, player.footSize, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.moveTo(player.x, player.y);
+        ctx.lineTo(player.x + swing, player.y + player.legLength);
+        ctx.stroke();
+
+        ctx.fillStyle = "#000";
+        ctx.beginPath();
+        ctx.arc(player.x + swing, player.y + player.legLength, player.footSize, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+
+      function drawRoad() {
+        ctx.fillStyle = "#e6d3b3";
+        ctx.fillRect(0, 500, canvas.width, canvas.height - 500);
+      }
+
+      function drawObstacles() {
+        obstacles.forEach((obs) => {
+          ctx.fillStyle = "#555";
+
+          switch (obs.type) {
+            case "hole":
+              ctx.fillStyle = "#aeefff";
+              ctx.fillRect(obs.x, 500, obs.size, canvas.height);
+              break;
+
+            case "circle":
+              ctx.fillStyle = obs.color;
+              ctx.beginPath();
+              ctx.arc(obs.x, 480, obs.size / 2, 0, Math.PI * 2);
+              ctx.fill();
+              break;
+
+            case "triangle":
+              ctx.fillStyle = obs.color;
+              ctx.beginPath();
+              ctx.moveTo(obs.x, 500 - obs.size);
+              ctx.lineTo(obs.x - obs.size / 2, 500);
+              ctx.lineTo(obs.x + obs.size / 2, 500);
+              ctx.closePath();
+              ctx.fill();
+              break;
+
+            case "square":
+              ctx.fillStyle = obs.color;
+              ctx.fillRect(obs.x - obs.size / 2, 500 - obs.size, obs.size, obs.size);
+              break;
+
+            case "coin":
+              ctx.save();
+              ctx.translate(obs.x, obs.y); // merkeze taşı
+              ctx.rotate((Date.now() / 1000) % (2 * Math.PI)); // yavaşça döndür
+
+              const fixedSize = 80;
+              ctx.drawImage(logo, -fixedSize / 2, -fixedSize / 2, fixedSize, fixedSize);
+
+              ctx.restore();
+              break;
+
+            case "star":
+              const starColors = ["yellow", "white", "gold", "#ffffcc"];
+              const blinkColor = starColors[Math.floor(Date.now() / 150) % starColors.length];
+              ctx.fillStyle = blinkColor;
+              ctx.beginPath();
+              ctx.moveTo(obs.x, obs.y);
+              ctx.lineTo(obs.x + obs.size / 2, obs.y + obs.size);
+              ctx.lineTo(obs.x - obs.size / 2, obs.y + obs.size / 3);
+              ctx.lineTo(obs.x + obs.size / 2, obs.y + obs.size / 3);
+              ctx.lineTo(obs.x - obs.size / 2, obs.y + obs.size);
+              ctx.closePath();
+              ctx.fill();
+              break;
+
+            case "dark_star":
+              const darkStarColors = ["black", "silver", "gray", "#333"];
+              const flicker = darkStarColors[Math.floor(Date.now() / 150) % darkStarColors.length];
+              ctx.fillStyle = flicker;
+              ctx.beginPath();
+              ctx.moveTo(obs.x, obs.y);
+              ctx.lineTo(obs.x + obs.size / 2, obs.y + obs.size);
+              ctx.lineTo(obs.x - obs.size / 2, obs.y + obs.size / 3);
+              ctx.lineTo(obs.x + obs.size / 2, obs.y + obs.size / 3);
+              ctx.lineTo(obs.x - obs.size / 2, obs.y + obs.size);
+              ctx.closePath();
+              ctx.fill();
+              break;
+          }
+
+          obs.x += gameSpeed;
+        });
+
+        for (let i = obstacles.length - 1; i >= 0; i--) {
+          if (obstacles[i].x > canvas.width + 100) {
+            obstacles.splice(i, 1);
+          }
+        }
+
+        obstacleTimer--;
+        if (obstacleTimer <= 0) {
+          let type;
+
+          if (obstacleCount % 5 === 0 && obstacleCount > 0) {
+            const r = Math.random();
+            if (r < 0.2) type = "coin";
+            else if (r < 0.65)
+              type = "star"; // 0.20 + 0.45
+            else type = "dark_star"; // remaining 0.35
+          } else {
+            const types = ["hole", "circle", "triangle", "square"];
+            type = types[Math.floor(Math.random() * types.length)];
+          }
+
+          const size =
+            type === "hole"
+              ? Math.min(80, 40 + Math.random() * 40) // max 100px, daha stabil
+              : type === "coin"
+                ? Math.random() * 20 + 40 // ✅ Coin: 40–60px arası
+                : Math.random() * 20 + 30;
+
+          let y;
+
+          if (type === "hole") {
+            y = 0;
+          } else {
+            const maxY = 500 - size * 1.5;
+            y = Math.random() * maxY;
+          }
+
+          let canPlace = true;
+          const buffer = 150;
+
+          for (let i = 0; i < obstacles.length; i++) {
+            const existing = obstacles[i];
+            if (Math.abs(existing.x - -100) < buffer && existing.type === "hole" && type === "hole") {
+              canPlace = false;
+              break;
+            }
+          }
+
+          if (canPlace) {
+            const safeColor = neonColors[Math.floor(Math.random() * neonColors.length)] || "#000"; // fallback color
+
+            obstacles.push({
+              type: type,
+              x: -100,
+              y: y,
+              size: size * 1.5,
+              color: safeColor,
+            });
+
+            obstacleCount++;
+            if (obstacleCount % 10 === 0) gameSpeed += 0.5;
+
+            obstacleTimer = obstacleCount < 10 ? Math.random() * 80 + 120 : Math.random() * 40 + 40;
+          }
+        }
+      }
+
+      function drawSky() {
+        let skyColor;
+
+        if (speedBoostTimer > 0 || darkBoostTimer > 0) {
+          const discoColors =
+            darkBoostTimer > 0
+              ? ["#222", "#444", "#666", "#999", "#ccc"]
+              : ["#ff99cc", "#99ccff", "#ccff66", "#ffcc66", "#66ccff"];
+          const colorIndex = Math.floor((speedBoostTimer + darkBoostTimer) / 5) % discoColors.length;
+          skyColor = discoColors[colorIndex];
+        } else {
+          // Gökyüzü geçişleri (gerçekçi)
+          const segments = [
+            { t: 0.0, color: [174, 239, 255] }, // sabah
+            { t: 0.15, color: [135, 206, 250] }, // gündüz
+            { t: 0.45, color: [255, 145, 77] }, // günbatımı
+            { t: 0.6, color: [11, 11, 29] }, // en koyu lacivert gece
+            { t: 0.85, color: [29, 81, 81] },
+            { t: 1.0, color: [174, 239, 255] }, // yeniden sabah
+          ];
+
+          function interpolate(c1, c2, factor) {
+            const r = Math.round(c1[0] + (c2[0] - c1[0]) * factor);
+            const g = Math.round(c1[1] + (c2[1] - c1[1]) * factor);
+            const b = Math.round(c1[2] + (c2[2] - c1[2]) * factor);
+            return `rgb(${r}, ${g}, ${b})`;
+          }
+
+          for (let i = 0; i < segments.length - 1; i++) {
+            const segStart = segments[i];
+            const segEnd = segments[i + 1];
+
+            if (timeOfDay >= segStart.t && timeOfDay < segEnd.t) {
+              const localT = (timeOfDay - segStart.t) / (segEnd.t - segStart.t);
+              skyColor = interpolate(segStart.color, segEnd.color, localT);
+              break;
+            }
+          }
+        }
+
+        ctx.fillStyle = skyColor;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        currentSkyColor = skyColor;
+      }
+
+      function drawSun() {
+        if (!isDay) return;
+
+        const sunX = canvas.width - timeOfDay * canvas.width * (1 / 0.6);
+        const sunY = 100 - 40 * Math.sin((timeOfDay * Math.PI) / 0.6);
+        const size = 30;
+
+        ctx.beginPath();
+        ctx.arc(sunX, sunY, size, 0, Math.PI * 2);
+        ctx.fillStyle = "#FFD700";
+        ctx.fill();
+      }
+
+      function drawMoon() {
+        if (isDay) return;
+
+        const t = (timeOfDay - 0.6) / 0.4;
+        const moonX = t * canvas.width;
+        const moonY = 100 - 40 * Math.sin(t * Math.PI);
+        const size = 25;
+
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(moonX, moonY, size, 0, Math.PI * 2);
+        ctx.fillStyle = "#ccc";
+        ctx.fill();
+      }
+
+      function drawClouds() {
+        if (!isDay) return; // Gece bulut yok
+
+        ctx.fillStyle = "#fff";
+        clouds.forEach((cloud) => {
+          ctx.beginPath();
+          ctx.arc(cloud.x, cloud.y, 20, 0, Math.PI * 2);
+          ctx.arc(cloud.x + 20, cloud.y + 10, 25, 0, Math.PI * 2);
+          ctx.arc(cloud.x - 20, cloud.y + 10, 20, 0, Math.PI * 2);
+          ctx.fill();
+          cloud.x -= 0.5;
+          if (cloud.x < -50) cloud.x = canvas.width + 50;
+        });
+      }
+
+      function drawBirds() {
+        if (!isDay) return; // Gece kuşlar uyuyor 💤
+
+        ctx.strokeStyle = "#000";
+        birds.forEach((bird) => {
+          ctx.beginPath();
+          ctx.moveTo(bird.x, bird.y);
+          ctx.lineTo(bird.x + 5, bird.y - 5);
+          ctx.lineTo(bird.x + 10, bird.y);
+          ctx.stroke();
+          bird.x -= 1;
+          if (bird.x < -20) bird.x = canvas.width + 20;
+        });
+      }
+
+      function drawCrowd() {
+        if (!tribuneLoaded) return;
+
+        tribuneFrameTimer++;
+        const dynamicDelay = Math.max(5, baseTribuneDelay - Math.floor(gameSpeed));
+        if (tribuneFrameTimer >= dynamicDelay) {
+          tribuneFrameTimer = 0;
+          tribuneFrameIndex = (tribuneFrameIndex + 1) % tribuneFrameCount;
+
+          if (tribuneFrameIndex === 0 && lastCrowdFrame !== 0) {
+            playSound("crowd");
+          }
+          lastCrowdFrame = tribuneFrameIndex;
+        }
+        const sourceX = tribuneFrameIndex * tribuneFrameWidth;
+        const drawX = (canvas.width - tribuneFrameWidth) / 2;
+        const drawY = 370;
+        const tribuneCount = 3;
+        const spacing = 5;
+
+        for (let i = 0; i < tribuneCount; i++) {
+          const drawX = i * (tribuneFrameWidth + spacing);
+          ctx.drawImage(
+            tribuneSprite,
+            sourceX,
+            0,
+            tribuneFrameWidth,
+            tribuneFrameHeight,
+            drawX,
+            drawY,
+            tribuneFrameWidth,
+            tribuneFrameHeight,
+          );
+        }
+      }
+
+      function drawScore() {
+        ctx.fillStyle = "#000";
+        ctx.font = "30px Arial";
+        ctx.textAlign = "left";
+        ctx.fillText(`Lives: ${lives}`, 10, canvas.height - 20);
+
+        ctx.textAlign = "right";
+        ctx.fillText(`Distance: ${distance.toFixed(1)} m`, canvas.width - 10, canvas.height - 20);
+      }
+
+      function drawBonusMessage() {
+        if (bonusMessageTimer > 0) {
+          ctx.font = "32px Arial";
+          ctx.fillStyle = "#000";
+          ctx.textAlign = "center";
+          ctx.fillText(bonusMessage, canvas.width / 2, canvas.height / 2);
+          bonusMessageTimer--;
+        }
+      }
+
+      function handleJump() {
+        if (player.isJumping) {
+          player.y += player.velocityY;
+          player.velocityY += gravity;
+
+          if (player.y >= 480) {
+            player.y = 480;
+            player.velocityY = 0;
+            player.isJumping = false;
+            jumpCount = 0;
+          }
+        }
+      }
+
+      function checkCollision() {
+        obstacles.forEach((obs) => {
+          if (["coin", "star", "dark_star"].includes(obs.type)) return;
+
+          if (obs.x + obs.size < 0 || obs.x - obs.size > canvas.width) return;
+
+          if (obs.type === "hole") {
+            if (!player.isJumping && player.x > obs.x && player.x < obs.x + obs.size) {
+              loseLife();
+              return;
+            }
+          } else {
+            const playerBottom = player.y + player.legLength + player.footSize;
+            const obstacleTop = 500 - obs.size;
+            const obstacleLeft = obs.x - obs.size / 2;
+            const obstacleRight = obs.x + obs.size / 2;
+
+            if (playerBottom > obstacleTop && player.x > obstacleLeft && player.x < obstacleRight) {
+              loseLife();
+              return;
+            }
+          }
+        });
+      }
+
+      function loseLife() {
+        if (isGameOver) return;
+        if (damageCooldown > 0 || rebirthTimer > 0) return;
+
+        playSound("hit");
+        lives--;
+        damageCooldown = 80;
+        rebirthTimer = 80;
+        isBlinking = true;
+
+        if (lives <= 0) {
+          isGameOver = true;
+          sounds.bgm.pause();
+          sounds.bgm.currentTime = 0;
+          playSound("gameover");
+          window.FarcadeSDK?.singlePlayer?.actions?.gameOver?.({
+            score: Math.floor(distance),
+          });
+        }
+      }
+
+      function handleBonuses() {
+        obstacles.forEach((obs, index) => {
+          const isCoin =
+            obs.type === "coin" &&
+            Math.abs(obs.x - player.x) < obs.size * 0.9 &&
+            Math.abs(obs.y - player.y) < obs.size * 0.9;
+
+          const isStar =
+            obs.type === "star" &&
+            Math.abs(obs.x - player.x) < obs.size * 0.9 &&
+            Math.abs(obs.y - player.y) < obs.size * 0.9;
+
+          const isDarkStar =
+            obs.type === "dark_star" &&
+            Math.abs(obs.x - player.x) < obs.size * 0.9 &&
+            Math.abs(obs.y - player.y) < obs.size * 0.9;
+
+          if (isCoin) {
+            playSound("coin");
+            lives++;
+            bonusMessage = "Extra life!";
+            bonusMessageTimer = 60;
+            obstacles.splice(index, 1);
+          }
+
+          if (isStar) {
+            playSound("star");
+            speedBoostTimer = 500;
+            bonusMessage = "Star collected!";
+            bonusMessageTimer = 60;
+            obstacles.splice(index, 1);
+          }
+
+          if (isDarkStar) {
+            playSound("darkstar");
+            darkBoostTimer = 500;
+            darkBoostedSpeed = baseSpeed + Math.floor(obstacleCount / 5) * 0.6;
+            bonusMessage = "Dark Star! Speed Boost";
+            bonusMessageTimer = 60;
+            obstacles.splice(index, 1);
+          }
+        });
+
+        if (darkBoostTimer > 0) {
+          gameSpeed = darkBoostedSpeed * 2;
+          darkBoostTimer--;
+        } else if (speedBoostTimer > 0) {
+          gameSpeed = baseSpeed;
+          speedBoostTimer--;
+        } else {
+          gameSpeed = baseSpeed + Math.floor(obstacleCount / 5) * 0.6;
+        }
+      }
+
+      document.getElementById("start-button").addEventListener("click", () => {
+        document.getElementById("start-screen").style.display = "none";
+        window.FarcadeSDK?.singlePlayer?.actions?.ready?.();
+
+        sounds.bgm.currentTime = 0;
+        sounds.bgm.play();
+        requestAnimationFrame(loop);
+      });
+
+      window.FarcadeSDK?.on?.("play_again", () => {
+        resetGame();
+        document.getElementById("start-screen").style.display = "none";
+        requestAnimationFrame(loop);
+      });
+
+      window.FarcadeSDK?.on?.("toggle_mute", (data) => {
+        isMuted = data?.isMuted;
+        Object.values(sounds).forEach((sound) => (sound.muted = isMuted));
+        console.log("Muted:", isMuted);
+      });
+
+      function resetGame() {
+        lives = 3;
+        distance = 0;
+        isGameOver = false;
+        player.y = 480;
+        jumpCount = 0;
+        obstacleCount = 0;
+        gameSpeed = baseSpeed;
+        obstacles.length = 0;
+        ghostOpacity = 1;
+        rebirthTimer = 0;
+        sounds.bgm.currentTime = 0;
+        sounds.bgm.play();
+        darkBoostTimer = 0;
+      }
+
+      function loop() {
+        if (isGameOver) return;
+        if (lives <= 0) {
+          isGameOver = true;
+
+          window.FarcadeSDK?.singlePlayer?.actions?.gameOver?.({
+            score: Math.floor(distance),
+          });
+        }
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawSky();
+        drawSun();
+        drawMoon();
+        drawClouds();
+        drawBirds();
+        drawCrowd();
+        drawRoad();
+        handleJump();
+        drawHead();
+        drawBonusMessage();
+        timeOfDay += 1 / (60 * 100); // 100 saniyede 1 tur
+        if (timeOfDay >= 1) timeOfDay = 0;
+
+        isDay = timeOfDay < 0.6; // 0.6'ya kadar gündüz, sonrası gece
+
+        const torsoTopY = drawTorso();
+        drawArms(torsoTopY);
+        drawLegs();
+        drawObstacles();
+        drawScore();
+
+        checkCollision();
+        handleBonuses();
+
+        distance += 0.01* gameSpeed;
+        angle += 0.1;
+        if (damageCooldown > 0) damageCooldown--;
+
+        if (rebirthTimer > 0) {
+          ghostOpacity = (Math.sin(rebirthTimer / 5) + 1) / 2; // flicker 0–1
+          rebirthTimer--;
+        } else {
+          ghostOpacity = 1;
+          isBlinking = false;
+        }
+        requestAnimationFrame(loop);
+      }
+
+      document.addEventListener("keydown", (e) => {
+        if (e.code === "Space" && jumpCount < maxJump) {
+          player.isJumping = true;
+          player.velocityY = -15;
+          jumpCount++;
+          playSound("jump");
+        }
+      });
+
+      canvas.addEventListener("touchstart", () => {
+        if (jumpCount < maxJump) {
+          player.isJumping = true;
+          player.velocityY = -15;
+          jumpCount++;
+          playSound("jump");
+        }
+      });
+    </script>
+  </body>
+</html>
