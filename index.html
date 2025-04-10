@@ -243,7 +243,7 @@
       let gameSpeed = baseSpeed;
 
       let roadOffset = 0;
-      let distance = 0;
+      let distance = 0.1;
       let isGameOver = false;
       let damageCooldown = 0;
       let ghostOpacity = 1;
@@ -794,7 +794,7 @@
 
       function resetGame() {
         lives = 3;
-        distance = 0;
+        distance = 0.1;
         isGameOver = false;
         player.y = 480;
         jumpCount = 0;
