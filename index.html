@@ -34,108 +34,130 @@
 
       /* 🎮 Start Screen */
       #start-screen {
+        display: block;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image: url("https://github.com/Luci13131313/Farcade-Run/blob/main/FarcadeBoy.png?raw=true");
+        background-size: cover;
+        background-position: center;
+        z-index: 10;
+        backdrop-filter: blur(3px);
+        color: #111;
+        font-weight: 600;
+        pointer-events: auto;
+      }
+
+      #start-title {
+        position: absolute;
+        bottom: 50px;
+        width: 100%;
+        text-align: center;
+        font-size: 26px;
+        color: #000;
+        text-shadow: 1px 1px 4px #fff;
+      }
+
+      #start-desc {
+        position: absolute;
+        bottom: 20px;
+        width: 100%;
+        text-align: center;
+        font-size: 14px;
+        color: #000;
+        text-shadow: 1px 1px 3px #fff;
+      }
+
+      #start-run-label {
+        position: absolute;
+        pointer-events: auto;
+        top: 255px;
+        width: 100%;
+        text-align: center;
+        font-size: 20px;
+        color: #111;
+        text-shadow: 1px 1px 3px #fff;
+      }
+
+      #hint-label {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        font-size: 14px;
+        background: rgba(255, 255, 255, 0.7);
+        padding: 4px 10px;
+        border-radius: 10px;
+        box-shadow: 0 0 6px rgba(0, 0, 0, 0.2);
+        cursor: pointer;
+        z-index: 20;
+        pointer-events: all;
+      }
+
+      #guide-screen {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
         position: absolute;
         top: 0;
         left: 0;
         width: 100%;
         height: 100%;
         background: linear-gradient(to bottom, #aeefff, #ffffff);
-        box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.1);
-        color: #000;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        z-index: 10;
+        z-index: 12;
+        padding: 0 20px;
+        font-size: 14px;
+        overflow: hidden;
         text-align: center;
-        padding: 20px;
+        box-sizing: border-box;
       }
 
-      #start-screen h1 {
-        font-size: 36px;
-        font-weight: bold;
+      #guide-screen h2 {
+        font-size: 24px;
+        margin-bottom: 8px;
+        color: #111;
+      }
+
+      #guide-screen p {
+        font-size: 13px;
+        line-height: 1.4;
         margin-bottom: 20px;
-      }
-
-      #start-screen p {
-        font-size: 16px;
-        margin-bottom: 30px;
-        line-height: 1.6;
         max-width: 300px;
       }
 
-      #start-button {
-        padding: 12px 28px;
-        font-size: 18px;
-        background: white;
-        color: black;
-        border: none;
-        border-radius: 8px;
-        cursor: pointer;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-        transition: all 0.3s ease;
-      }
-
-      #start-button:hover {
-        background: #222;
-        color: white;
-      }
-
-      /* 💀 Game Over */
-      #game-over-screen {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.95);
-        color: white;
-        display: none;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        z-index: 11;
-      }
-
-      #game-over-screen button {
-        padding: 10px 20px;
-        font-size: 18px;
-        margin-top: 10px;
-        background: #333;
-        color: white;
-        border: none;
-        border-radius: 8px;
-        cursor: pointer;
-      }
-
-      #game-over-screen button:hover {
-        background: #555;
+      #guide-screen button {
+        margin-top: 8px;
       }
     </style>
-
-    <!-- Farcade SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@farcade/game-sdk@latest/dist/index.min.js"></script>
   </head>
   <body>
     <div id="game-container">
       <canvas id="game"></canvas>
       <div id="start-screen">
-        <h1>Farcade Boy: <span style="font-weight: normal">The Run</span></h1>
-       <div id="start-screen">
-        <h1>Farcade Boy: <span style="font-weight: normal">The Run</span></h1>
-        <div style="margin: 12px 0; font-size: 14px; line-height: 1.6; text-align: center;">
-          🟡 <b>Star</b>: Speed boost<br>
-          ⚫ <b>Dark Star</b>: Double speed boost<br>
-          🎮 <b>Farcade Logo</b>: Grants extra life<br>
-          🕹️ <b>Double Jump</b>: You can jump twice in a row!<br>
-          🎯 <b>Goal</b>: Jump (Space or Tap) to avoid obstacles and run as far as you can.<br>
+        <div id="hint-label">Hints</div>
+        <div id="start-run-label" style="pointer-events: none; opacity: 0.4">Tap/Click to Start</div>
+        <div id="start-desc">Run as far as you can, avoid obstacles and holes.</div>
+        <div id="start-title">Farcade Boy: The Run</div>
+      </div>
+
+      <div id="guide-screen" style="display: none">
+        <div class="poster-box">
+          <h2>🎮 How to Play</h2>
+          <p>
+            🕹 Tap / Click / Space = Jump<br />
+            🔁 Double tap = Backflip + Double Jump<br /><br />
+            🌟 <b>Bonuses:</b><br />
+            ⭐ Star = Speed Reset<br />
+            ⚫ Dark Star = x2 Speed + Invincible<br />
+            🛡 Shield = Protection<br />
+            🎮 Farcade Logo = Extra Life<br /><br />
+            ❗ New bonus overrides old one!
+          </p>
+          <button id="close-guide" class="btn btn-primary">Back</button>
         </div>
-        <div id="game-over-screen">
-          <h1>Game Over</h1>
-          <p>Your Score: <span id="distance"></span> m</p>
-          <button id="play-again-button">Play Again</button>
-        </div>
-        <button id="start-button" disabled>Start the Run</button>
       </div>
     </div>
 
@@ -162,15 +184,18 @@
         darkstar: new Audio(
           "https://raw.githubusercontent.com/Luci13131313/Farcade-Run/main/assets/sounds/darkstar.mp3",
         ),
+        shield: new Audio("https://raw.githubusercontent.com/Luci13131313/Farcade-Run/main/assets/sounds/shield.mp3"),
+        hole: new Audio("https://raw.githubusercontent.com/Luci13131313/Farcade-Run/main/assets/sounds/hole.mp3"),
         jump: new Audio("https://raw.githubusercontent.com/Luci13131313/Farcade-Run/main/assets/sounds/jump.mp3"),
       };
 
       sounds.jump.volume = 0.3;
       sounds.darkstar.volume = 0.4;
-      sounds.star.volume = 0.3;
+      sounds.star.volume = 0.2;
       sounds.hit.volume = 0.3;
       sounds.bgm.loop = true;
       sounds.bgm.volume = 0.3;
+      sounds.shield.volume = 0.3;
       let isMuted = false;
 
       function playSound(name) {
@@ -188,8 +213,24 @@
       const logo = new Image();
       logo.src = "https://github.com/Luci13131313/Farcade-Run/blob/main/logo.png?raw=true";
 
-      const tribuneSprite = new Image();
-      tribuneSprite.src = "https://github.com/Luci13131313/Farcade-Run/blob/main/cheering_crowd.png?raw=true";
+      const shieldImg = new Image();
+      shieldImg.src = "https://github.com/Luci13131313/Farcade-Run/blob/main/shield.png?raw=true";
+
+      const tribuneImages = [
+        "https://github.com/Luci13131313/Farcade-Run/blob/main/ist.png?raw=true",
+        "https://github.com/Luci13131313/Farcade-Run/blob/main/07792108-2895-41f6-9a6b-e27a4b1452cc.png?raw=true",
+        "https://github.com/Luci13131313/Farcade-Run/blob/main/2ad09f81-a8db-4306-8925-b5b9200fbe8d.png?raw=true",
+        "https://github.com/Luci13131313/Farcade-Run/blob/main/2b4052ea-4d69-4d3c-807f-49cddbc0d105.png?raw=true",
+        "https://github.com/Luci13131313/Farcade-Run/blob/main/2c51b7b4-fec6-4152-9163-a63f4ff5507a.png?raw=true",
+      ];
+
+      const tribunes = tribuneImages.map((src) => {
+        const img = new Image();
+        img.src = src;
+        img.onload = checkStart;
+        return img;
+      });
+
       const player = {
         x: 500,
         y: 480,
@@ -199,13 +240,8 @@
         footSize: 6,
         velocityY: 0,
         isJumping: false,
+        fallingInHole: false,
       };
-
-      let jumpCount = 0;
-      let timeOfDay = 0; // 0-1 arası dönen zaman
-      let isDay = true;
-
-      const maxJump = 2;
 
       const colors = ["blue", "red", "green", "purple", "yellow", "pink"];
 
@@ -219,19 +255,68 @@
         "#FFFF33", // Bright Yellow
       ];
 
-      const tribuneFrameCount = 16;
-      const tribuneFrameWidth = 240;
-      const tribuneFrameHeight = 240;
-      let tribuneFrameIndex = 0;
-      let tribuneFrameTimer = 1;
-      let baseTribuneDelay = 100;
-
-      const obstacles = [];
-      let obstacleTimer = 0;
-
-      let angle = 0;
+      const maxJump = 2;
+      let jumpCount = 0;
+      let lastJumpCount = 0;
+      let isBackflipping = false;
+      let backflipAngle = 0;
       let gravity = 0.46;
 
+      // 💥 Durumlar & Can
+      let lives = 1;
+      let isGameOver = false;
+      let damageCooldown = 0;
+      let rebirthTimer = 0;
+      let ghostOpacity = 1;
+
+      // 🛡️ Bonus Mekanikleri
+      let bonusTimer = 0;
+      let speedBoostTimer = 0;
+      let darkBoostTimer = 0;
+      let shieldTimer = 0;
+      let hasShield = false;
+      let darkStarInvincible = false;
+      let darkBoostedSpeed = 6;
+
+      // 🔊 Ses & Mesajlar
+      let bonusMessage = "";
+      let bonusMessageTimer = 0;
+      let statusMessage = "";
+      let statusTimer = 0;
+
+      // 🕹️ Oyun Akışı
+      let distance = 0.1;
+      let baseSpeed = 4;
+      let gameSpeed = baseSpeed;
+      let difficultyLevel = 1;
+      let obstacleCount = 0;
+      let obstacleTimer = 10;
+      let obstacleDifficultyTimer = 0;
+      let comboCooldownTimer = 0;
+      let recentlySpawnedCombo = false;
+
+      // 🕳️ Engeller & Düşüşler
+      const obstacles = [];
+      let holeFallData = null;
+      let lastHoleObstacleCount = 0;
+
+      // 🌄 Zaman & Gün Döngüsü
+      let timeOfDay = 0;
+      let isDay = true;
+
+      // 👥 Tribune Mekaniği
+      let showTribune = false;
+      let currentTribune = 1;
+      let nextTribuneDistance = 5;
+      let tribuneTimer = 0;
+      let tribuneX = 0;
+      let tribune2X = 0;
+
+      // 🛣️ Zemin ve Yol
+      let roadType = 1;
+      let nextRoadSwitch = 250;
+
+      // 🌥️ Arka Plan & Efektler
       const clouds = [
         { x: 50, y: 100 },
         { x: 200, y: 60 },
@@ -243,40 +328,31 @@
         { x: 100, y: 150 },
       ];
 
-      let obstacleCount = 0;
-      const baseSpeed = 4;
-      let gameSpeed = baseSpeed;
+      let angle = 0;
 
-      let roadOffset = 0;
-      let distance = 0.1;
-      let isGameOver = false;
-      let damageCooldown = 0;
-      let ghostOpacity = 1;
-      let rebirthTimer = 0;
-      let isBlinking = false;
-      let lives = 3;
-      let speedBoostTimer = 0;
-      let lastCrowdFrame = -1;
-      let darkBoostTimer = 0;
-      let darkBoostedSpeed = 8;
-      let bonusMessage = "";
-      let bonusMessageTimer = 0;
-      let currentSkyColor = "#aeefff"; // Güncel gökyüzü rengi tutulacak
+      // 🎞️ Oyun Döngüsü
+      let lastTime = performance.now();
+      let loopId = null;
 
       let assetsLoaded = 0;
+      let shieldLoaded = false;
+
+      expectedAssets = 2 + tribuneImages.length; // logo + shield + 5 tribune
+
+      logo.onload = checkStart;
+      shieldImg.onload = () => {
+        shieldLoaded = true;
+        checkStart();
+      };
 
       function checkStart() {
         assetsLoaded++;
-        if (assetsLoaded === 2) {
-          document.getElementById("start-button").disabled = false;
+        console.log("Loaded", assetsLoaded, "/", expectedAssets);
+        if (assetsLoaded >= expectedAssets) {
+          document.getElementById("start-run-label").style.pointerEvents = "auto";
+          document.getElementById("start-run-label").style.opacity = "1";
         }
       }
-
-      logo.onload = checkStart;
-      tribuneSprite.onload = function () {
-        tribuneLoaded = true;
-        checkStart();
-      };
 
       function drawHead() {
         ctx.save();
@@ -284,8 +360,27 @@
 
         const headSize = 80;
         const offsetY = -15;
+        const x = player.x;
+        const y = -player.torsoLength - headSize / 2 + 10; // kafa biraz aşağı
 
-        ctx.translate(player.x, player.y - player.torsoLength - headSize / 2 - offsetY);
+        // ✨ Disco efekti varsa glow çiz
+        if (speedBoostTimer > 0 || darkBoostTimer > 0) {
+          const glowColors =
+            darkBoostTimer > 0
+              ? ["#111", "#333", "#555", "#999"]
+              : ["#ff99cc", "#99ccff", "#ccff66", "#ffcc66", "#66ccff"];
+          const glowColor = glowColors[Math.floor(Date.now() / 150) % glowColors.length];
+
+          ctx.shadowColor = glowColor;
+          ctx.shadowBlur = 45;
+        }
+
+        ctx.translate(x, y);
+
+        if (isBackflipping) {
+          ctx.rotate((backflipAngle * Math.PI) / 180);
+        }
+
         ctx.drawImage(logo, -headSize / 2, -headSize / 2, headSize, headSize);
 
         ctx.restore();
@@ -295,7 +390,15 @@
         ctx.save();
         ctx.globalAlpha = ghostOpacity;
         ctx.strokeStyle = "#000";
-        ctx.lineWidth = 3;
+        ctx.lineWidth = 7;
+
+        if (shieldTimer > 0) {
+          ctx.shadowColor = "#a66cff"; // Farcade mor tonu
+          ctx.shadowBlur = 45;
+        } else if (speedBoostTimer > 0 || darkBoostTimer > 0) {
+          ctx.shadowColor = getDiscoGlowColor();
+          ctx.shadowBlur = 40;
+        }
 
         const torsoTopY = player.y - player.torsoLength;
         ctx.beginPath();
@@ -310,9 +413,17 @@
         ctx.save();
         ctx.globalAlpha = ghostOpacity;
         ctx.strokeStyle = "#000";
-        ctx.lineWidth = 3;
+        ctx.lineWidth = 6;
         const swing = Math.sin(angle) * 10;
         const lift = Math.cos(angle) * 5;
+
+        if (shieldTimer > 0) {
+          ctx.shadowColor = "#a66cff"; // Farcade mor tonu
+          ctx.shadowBlur = 45;
+        } else if (speedBoostTimer > 0 || darkBoostTimer > 0) {
+          ctx.shadowColor = getDiscoGlowColor();
+          ctx.shadowBlur = 40;
+        }
 
         ctx.beginPath();
         ctx.moveTo(player.x, torsoTopY + 5);
@@ -330,7 +441,15 @@
         ctx.save();
         ctx.globalAlpha = ghostOpacity;
         ctx.strokeStyle = "#000";
-        ctx.lineWidth = 3;
+        ctx.lineWidth = 5;
+
+        if (shieldTimer > 0) {
+          ctx.shadowColor = "#a66cff"; // Farcade mor tonu
+          ctx.shadowBlur = 45;
+        } else if (speedBoostTimer > 0 || darkBoostTimer > 0) {
+          ctx.shadowColor = getDiscoGlowColor();
+          ctx.shadowBlur = 40;
+        }
 
         const swing = Math.sin(angle) * 10;
 
@@ -356,21 +475,240 @@
         ctx.restore();
       }
 
+      function drawCharacter() {
+        ctx.save();
+        ctx.globalAlpha = ghostOpacity;
+
+        const centerX = player.x;
+        const centerY = player.y - player.torsoLength / 2;
+
+        ctx.translate(centerX, centerY);
+
+        if (isBackflipping) {
+          ctx.rotate((backflipAngle * Math.PI) / 180);
+        }
+
+        // Glow efekti (disco aktifse)
+        if (shieldTimer > 0) {
+          ctx.shadowColor = "#b26bff"; // Mor ton (play again ekranına uyumlu)
+          ctx.shadowBlur = 45;
+        } else if (speedBoostTimer > 0 || darkBoostTimer > 0) {
+          ctx.shadowColor = getDiscoGlowColor();
+          ctx.shadowBlur = 40;
+        }
+
+        // Karakter parçalarını döndürülmüş koordinata göre çiz
+        drawHeadInternal();
+        const torsoTopY = drawTorsoInternal();
+        drawArmsInternal(torsoTopY);
+        drawLegsInternal();
+
+        ctx.restore();
+      }
+
+      function drawHeadInternal() {
+        const headSize = 80;
+        const torsoTopY = -player.torsoLength; // gövdenin üst noktası
+        const y = torsoTopY - headSize + 15;
+
+        ctx.drawImage(logo, -headSize / 2, y, headSize, headSize);
+      }
+
+      function drawTorsoInternal() {
+        ctx.strokeStyle = "#000";
+        ctx.lineWidth = 7;
+
+        const torsoTopY = -player.torsoLength;
+        const torsoBottomY = 0;
+
+        ctx.beginPath();
+        ctx.moveTo(0, torsoTopY);
+        ctx.lineTo(0, torsoBottomY);
+        ctx.stroke();
+
+        return torsoTopY; // Kol referansı için
+      }
+
+      function drawArmsInternal(torsoTopY) {
+        ctx.strokeStyle = "#000";
+        ctx.lineWidth = 5;
+
+        const swing = Math.sin(angle) * 10;
+        const lift = Math.cos(angle) * 5;
+
+        ctx.beginPath();
+        ctx.moveTo(0, torsoTopY + 5);
+        ctx.lineTo(swing, torsoTopY + player.armLength + lift);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(0, torsoTopY + 5);
+        ctx.lineTo(-swing, torsoTopY + player.armLength - lift);
+        ctx.stroke();
+      }
+
+      function drawLegsInternal() {
+        if (shieldTimer > 0) {
+          ctx.shadowColor = "#a66cff"; // Farcade mor tonu
+          ctx.shadowBlur = 45;
+        } else if (speedBoostTimer > 0 || darkBoostTimer > 0) {
+          ctx.shadowColor = getDiscoGlowColor();
+          ctx.shadowBlur = 40;
+        } else {
+          ctx.shadowColor = "transparent";
+        }
+
+        ctx.fillStyle = "#000";
+        ctx.strokeStyle = "#000";
+        ctx.lineWidth = 5;
+
+        const swing = Math.sin(angle) * 10;
+        const legY = player.legLength;
+
+        // Left leg
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(-swing, legY);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.arc(-swing, legY, player.footSize, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Right leg
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(swing, legY);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.arc(swing, legY, player.footSize, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      function drawTribunes(delta) {
+        if (!delta || typeof delta !== "number" || !showTribune) return;
+
+        const img = tribunes[(currentTribune - 1) % tribunes.length];
+        if (!img.complete) return;
+
+        const speed = delta * 60 * 4;
+        const y = 275;
+        const h = 250;
+
+        if (currentTribune % 2 === 0) {
+          tribune2X += speed;
+          if (tribune2X >= canvas.width) tribune2X = 0;
+          ctx.drawImage(img, tribune2X - canvas.width, y, canvas.width, h);
+          ctx.drawImage(img, tribune2X, y, canvas.width, h);
+        } else {
+          tribuneX += speed;
+          if (tribuneX >= canvas.width) tribuneX = 0;
+          ctx.drawImage(img, tribuneX - canvas.width, y, canvas.width, h);
+          ctx.drawImage(img, tribuneX, y, canvas.width, h);
+        }
+
+        tribuneTimer -= delta * 60;
+        if (tribuneTimer <= 0) {
+          showTribune = false;
+          nextTribuneDistance = distance + (currentTribune === 1 ? 100 : 50);
+          roadType = 1 + Math.floor(Math.random() * 3); // 🌄 yeni yol tipi
+          sounds.crowd.pause();
+          sounds.crowd.currentTime = 0;
+        }
+      }
+
       function drawRoad() {
-        ctx.fillStyle = "#e6d3b3";
-        ctx.fillRect(0, 500, canvas.width, canvas.height - 500);
+        const roadSegments = [];
+        let lastX = 0;
+
+        obstacles.forEach((obs) => {
+          if (obs.type === "hole") {
+            if (obs.x > lastX) {
+              roadSegments.push({ x: lastX, width: obs.x - lastX });
+            }
+            lastX = obs.x + obs.size;
+          }
+        });
+
+        if (lastX < canvas.width) {
+          roadSegments.push({ x: lastX, width: canvas.width - lastX });
+        }
+
+        roadSegments.forEach((seg) => {
+          const topY = 500;
+          const height = canvas.height - 500;
+          const topH = 30;
+          const bottomH = height - topH;
+
+          if (roadType === 1) {
+            // Toprak Yol
+            ctx.fillStyle = "#e6d3b3";
+            ctx.fillRect(seg.x, topY, seg.width, topH);
+
+            const grad = ctx.createLinearGradient(seg.x, topY + topH, seg.x, topY + height);
+            grad.addColorStop(0, "#d6c2a2");
+            grad.addColorStop(1, "#b49a7c");
+            ctx.fillStyle = grad;
+            ctx.fillRect(seg.x, topY + topH, seg.width, bottomH);
+          } else if (roadType === 2) {
+            // Taş Yol
+            ctx.fillStyle = "#aaa";
+            ctx.fillRect(seg.x, topY, seg.width, topH);
+            for (let i = 0; i < seg.width; i += 24) {
+              const blockW = 12 + Math.random() * 10;
+              const h = 20 + Math.random() * 5;
+              ctx.fillStyle = "#999";
+              ctx.fillRect(seg.x + i, topY, blockW, h);
+            }
+
+            const grad = ctx.createLinearGradient(seg.x, topY + topH, seg.x, topY + height);
+            grad.addColorStop(0, "#999");
+            grad.addColorStop(1, "#888");
+            ctx.fillStyle = grad;
+            ctx.fillRect(seg.x, topY + topH, seg.width, bottomH);
+          } else if (roadType === 3) {
+            // Çimenli Yol
+            ctx.fillStyle = "#88b94d";
+            ctx.fillRect(seg.x, topY, seg.width, topH);
+
+            for (let i = 0; i < seg.width; i += 4) {
+              ctx.strokeStyle = "#6fa13d";
+              ctx.beginPath();
+              ctx.moveTo(seg.x + i, topY + topH);
+              ctx.lineTo(seg.x + i, topY + topH - 5 - Math.random() * 10);
+              ctx.stroke();
+            }
+
+            const grad = ctx.createLinearGradient(seg.x, topY + topH, seg.x, topY + height);
+            grad.addColorStop(0, "#6f9c3b");
+            grad.addColorStop(1, "#557a2f");
+            ctx.fillStyle = grad;
+            ctx.fillRect(seg.x, topY + topH, seg.width, bottomH);
+          }
+        });
       }
 
       function drawObstacles() {
+        if (obstacleCount === 0 && distance >= 0.02) {
+          obstacles.length = 0;
+          obstacles.push({
+            type: "hole",
+            x: -40, // ekrana hemen girsin
+            y: 0,
+            size: 60,
+            color: "#000",
+          });
+          obstacleCount++; // bu önemli, yoksa tekrar ekler
+          lastHoleObstacleCount = 0;
+          obstacleTimer = 60; // küçük bir bekleme
+          return; // bu frame'de sadece bu olsun
+        }
+
         obstacles.forEach((obs) => {
           ctx.fillStyle = "#555";
 
           switch (obs.type) {
-            case "hole":
-              ctx.fillStyle = "#aeefff";
-              ctx.fillRect(obs.x, 500, obs.size, canvas.height);
-              break;
-
             case "circle":
               ctx.fillStyle = obs.color;
               ctx.beginPath();
@@ -391,6 +729,11 @@
             case "square":
               ctx.fillStyle = obs.color;
               ctx.fillRect(obs.x - obs.size / 2, 500 - obs.size, obs.size, obs.size);
+              break;
+
+            case "tower":
+              ctx.fillStyle = obs.color;
+              ctx.fillRect(obs.x - obs.size / 2, 500 - obs.height, obs.size, obs.height);
               break;
 
             case "coin":
@@ -431,6 +774,13 @@
               ctx.closePath();
               ctx.fill();
               break;
+
+            case "shield":
+              if (shieldLoaded) {
+                const shieldSize = 100;
+                ctx.drawImage(shieldImg, obs.x - shieldSize / 2, obs.y - shieldSize / 2, shieldSize, shieldSize);
+              }
+              break;
           }
 
           obs.x += gameSpeed;
@@ -444,102 +794,125 @@
 
         obstacleTimer--;
         if (obstacleTimer <= 0) {
+          bonusTimer++;
           let type;
 
-          if (obstacleCount % 5 === 0 && obstacleCount > 0) {
+          if (bonusTimer >= 6) {
+            bonusTimer = 0;
             const r = Math.random();
-            if (r < 0.2) type = "coin";
-            else if (r < 0.65)
-              type = "star"; // 0.20 + 0.45
-            else type = "dark_star"; // remaining 0.35
+            if (r < 0.1) type = "dark_star";
+            else if (r < 0.4) type = "shield";
+            else if (r < 0.7) type = "coin";
+            else type = "star";
           } else {
-            const types = ["hole", "circle", "triangle", "square"];
+            const types = ["circle", "triangle", "square"];
+            if (lastHoleObstacleCount >= 5) types.push("hole");
             type = types[Math.floor(Math.random() * types.length)];
           }
 
           const size =
             type === "hole"
-              ? Math.min(80, 40 + Math.random() * 40) // max 100px, daha stabil
+              ? Math.min(80, 40 + Math.random() * 40)
               : type === "coin"
-                ? Math.random() * 20 + 40 // ✅ Coin: 40–60px arası
+                ? Math.random() * 20 + 40
                 : Math.random() * 20 + 30;
 
-          let y;
+          let y = type === "hole" ? 0 : Math.random() * (500 - size * 1.5);
 
+          // Delik sayacını güncelle
           if (type === "hole") {
-            y = 0;
+            lastHoleObstacleCount = 0;
+            obstacles.push({
+              type: "tower",
+              x: -100 - 15 * gameSpeed,
+              y: 500 - 160, // yüksekliği 160 px
+              size: 40,
+              height: 160,
+              color: neonColors[Math.floor(Math.random() * neonColors.length)] || "#000",
+            });
           } else {
-            const maxY = 500 - size * 1.5;
-            y = Math.random() * maxY;
+            lastHoleObstacleCount++;
           }
 
-          let canPlace = true;
-          const buffer = 150;
+          const spawnCombo = !recentlySpawnedCombo && distance > 500 && Math.random() < 0.3;
 
-          for (let i = 0; i < obstacles.length; i++) {
-            const existing = obstacles[i];
-            if (Math.abs(existing.x - -100) < buffer && existing.type === "hole" && type === "hole") {
-              canPlace = false;
-              break;
-            }
-          }
+          if (spawnCombo) {
+            recentlySpawnedCombo = true;
+            comboCooldownTimer = 300; // 5 saniye boyunca çiftli spawn olmasın (60 FPS * 5)
+            const type2 = ["circle", "triangle", "square"].filter((t) => t !== type)[Math.floor(Math.random() * 2)];
 
-          if (canPlace) {
-            const safeColor = neonColors[Math.floor(Math.random() * neonColors.length)] || "#000"; // fallback color
+            const size1 = size * 1.5;
+            const size2 = size * 1.4;
+            const spacing = 0;
 
             obstacles.push({
-              type: type,
+              type,
               x: -100,
-              y: y,
+              y,
               size: size * 1.5,
-              color: safeColor,
+              color: neonColors[Math.floor(Math.random() * neonColors.length)] || "#000",
             });
-
             obstacleCount++;
-            if (obstacleCount % 10 === 0) gameSpeed += 0.5;
 
-            obstacleTimer = obstacleCount < 10 ? Math.random() * 80 + 120 : Math.random() * 40 + 40;
+            obstacles.push({
+              type: type2,
+              x: -100 - 60, // yanına biraz solda
+              y,
+              size: size * 1.4,
+              color: neonColors[Math.floor(Math.random() * neonColors.length)] || "#000",
+            });
+            obstacleCount++;
+          } else {
+            obstacles.push({
+              type,
+              x: -100,
+              y,
+              size: size * 1.5,
+              color: neonColors[Math.floor(Math.random() * neonColors.length)] || "#000",
+            });
+            obstacleCount++;
           }
+
+          const spawnInterval = Math.max(30, 150 - difficultyLevel * 10);
+          obstacleTimer = Math.random() * spawnInterval + spawnInterval;
         }
+      }
+
+      function getDiscoGlowColor() {
+        const glowColors =
+          darkBoostTimer > 0
+            ? ["#111", "#333", "#555", "#999"]
+            : ["#ff99cc", "#99ccff", "#ccff66", "#ffcc66", "#66ccff"];
+        return glowColors[Math.floor(Date.now() / 150) % glowColors.length];
       }
 
       function drawSky() {
         let skyColor;
 
-        if (speedBoostTimer > 0 || darkBoostTimer > 0) {
-          const discoColors =
-            darkBoostTimer > 0
-              ? ["#222", "#444", "#666", "#999", "#ccc"]
-              : ["#ff99cc", "#99ccff", "#ccff66", "#ffcc66", "#66ccff"];
-          const colorIndex = Math.floor((speedBoostTimer + darkBoostTimer) / 5) % discoColors.length;
-          skyColor = discoColors[colorIndex];
-        } else {
-          // Gökyüzü geçişleri (gerçekçi)
-          const segments = [
-            { t: 0.0, color: [174, 239, 255] }, // sabah
-            { t: 0.15, color: [135, 206, 250] }, // gündüz
-            { t: 0.45, color: [255, 145, 77] }, // günbatımı
-            { t: 0.6, color: [11, 11, 29] }, // en koyu lacivert gece
-            { t: 0.85, color: [29, 81, 81] },
-            { t: 1.0, color: [174, 239, 255] }, // yeniden sabah
-          ];
+        const segments = [
+          { t: 0.0, color: [174, 239, 255] }, // sabah
+          { t: 0.15, color: [135, 206, 250] }, // gündüz
+          { t: 0.45, color: [255, 145, 77] }, // günbatımı
+          { t: 0.6, color: [11, 11, 29] }, // gece
+          { t: 0.85, color: [29, 81, 81] },
+          { t: 1.0, color: [174, 239, 255] }, // yeniden sabah
+        ];
 
-          function interpolate(c1, c2, factor) {
-            const r = Math.round(c1[0] + (c2[0] - c1[0]) * factor);
-            const g = Math.round(c1[1] + (c2[1] - c1[1]) * factor);
-            const b = Math.round(c1[2] + (c2[2] - c1[2]) * factor);
-            return `rgb(${r}, ${g}, ${b})`;
-          }
+        function interpolate(c1, c2, factor) {
+          const r = Math.round(c1[0] + (c2[0] - c1[0]) * factor);
+          const g = Math.round(c1[1] + (c2[1] - c1[1]) * factor);
+          const b = Math.round(c1[2] + (c2[2] - c1[2]) * factor);
+          return `rgb(${r}, ${g}, ${b})`;
+        }
 
-          for (let i = 0; i < segments.length - 1; i++) {
-            const segStart = segments[i];
-            const segEnd = segments[i + 1];
+        for (let i = 0; i < segments.length - 1; i++) {
+          const segStart = segments[i];
+          const segEnd = segments[i + 1];
 
-            if (timeOfDay >= segStart.t && timeOfDay < segEnd.t) {
-              const localT = (timeOfDay - segStart.t) / (segEnd.t - segStart.t);
-              skyColor = interpolate(segStart.color, segEnd.color, localT);
-              break;
-            }
+          if (timeOfDay >= segStart.t && timeOfDay < segEnd.t) {
+            const localT = (timeOfDay - segStart.t) / (segEnd.t - segStart.t);
+            skyColor = interpolate(segStart.color, segEnd.color, localT);
+            break;
           }
         }
 
@@ -606,42 +979,6 @@
         });
       }
 
-      function drawCrowd() {
-        if (!tribuneLoaded) return;
-
-        tribuneFrameTimer++;
-        const dynamicDelay = Math.max(5, baseTribuneDelay - Math.floor(gameSpeed));
-        if (tribuneFrameTimer >= dynamicDelay) {
-          tribuneFrameTimer = 0;
-          tribuneFrameIndex = (tribuneFrameIndex + 1) % tribuneFrameCount;
-
-          if (tribuneFrameIndex === 0 && lastCrowdFrame !== 0) {
-            playSound("crowd");
-          }
-          lastCrowdFrame = tribuneFrameIndex;
-        }
-        const sourceX = tribuneFrameIndex * tribuneFrameWidth;
-        const drawX = (canvas.width - tribuneFrameWidth) / 2;
-        const drawY = 370;
-        const tribuneCount = 3;
-        const spacing = 5;
-
-        for (let i = 0; i < tribuneCount; i++) {
-          const drawX = i * (tribuneFrameWidth + spacing);
-          ctx.drawImage(
-            tribuneSprite,
-            sourceX,
-            0,
-            tribuneFrameWidth,
-            tribuneFrameHeight,
-            drawX,
-            drawY,
-            tribuneFrameWidth,
-            tribuneFrameHeight,
-          );
-        }
-      }
-
       function drawScore() {
         ctx.fillStyle = "#000";
         ctx.font = "30px Arial";
@@ -652,13 +989,31 @@
         ctx.fillText(`Distance: ${distance.toFixed(1)} m`, canvas.width - 10, canvas.height - 20);
       }
 
-      function drawBonusMessage() {
+      function drawBonusMessage(delta) {
         if (bonusMessageTimer > 0) {
           ctx.font = "32px Arial";
           ctx.fillStyle = "#000";
           ctx.textAlign = "center";
           ctx.fillText(bonusMessage, canvas.width / 2, canvas.height / 2);
-          bonusMessageTimer--;
+          bonusMessageTimer -= delta * 60;
+        }
+      }
+
+      function drawStatusMessage() {
+        const isBoostActive = speedBoostTimer > 0 || darkBoostTimer > 0 || shieldTimer > 0;
+        if (isBoostActive && statusMessage) {
+          ctx.save();
+          ctx.font = "20px Arial";
+          ctx.textAlign = "left";
+          ctx.fillStyle = Math.floor(Date.now() / 150) % 2 === 0 ? "#f00" : "#000";
+
+          let countdown = "";
+          if (shieldTimer > 0) countdown = `${Math.ceil(shieldTimer / 60)}s`;
+          else if (darkBoostTimer > 0) countdown = `${Math.ceil(darkBoostTimer / 60)}s`;
+          else if (speedBoostTimer > 0) countdown = `${Math.ceil(speedBoostTimer / 60)}s`;
+
+          ctx.fillText(statusMessage + countdown, 10, canvas.height - 60);
+          ctx.restore();
         }
       }
 
@@ -672,33 +1027,53 @@
             player.velocityY = 0;
             player.isJumping = false;
             jumpCount = 0;
+            lastJumpCount = 0;
           }
         }
       }
 
       function checkCollision() {
-        obstacles.forEach((obs) => {
-          if (["coin", "star", "dark_star"].includes(obs.type)) return;
+        if (isGameOver || rebirthTimer > 0) return;
 
-          if (obs.x + obs.size < 0 || obs.x - obs.size > canvas.width) return;
+        const playerBottom = player.y + player.legLength + player.footSize;
+
+        for (let obs of obstacles) {
+          if (["coin", "star", "dark_star", "shield"].includes(obs.type)) continue;
+          if (obs.x + obs.size < 0 || obs.x - obs.size > canvas.width) continue;
 
           if (obs.type === "hole") {
-            if (!player.isJumping && player.x > obs.x && player.x < obs.x + obs.size) {
-              loseLife();
-              return;
+            const isOverHole = player.x > obs.x && player.x < obs.x + obs.size;
+            if (isOverHole && !player.isJumping && !player.fallingInHole && !darkStarInvincible) {
+              player.fallingInHole = true;
+              holeFallData = {
+                velocity: 2,
+                angle: 0,
+                rotationSpeed: 0.2,
+              };
+              playSound("hole");
+              break;
             }
           } else {
-            const playerBottom = player.y + player.legLength + player.footSize;
-            const obstacleTop = 500 - obs.size;
+            const obstacleHeight = obs.type === "tower" ? obs.height : obs.size;
+            const obstacleTop = 500 - obstacleHeight;
             const obstacleLeft = obs.x - obs.size / 2;
             const obstacleRight = obs.x + obs.size / 2;
 
-            if (playerBottom > obstacleTop && player.x > obstacleLeft && player.x < obstacleRight) {
-              loseLife();
-              return;
+            const hits = playerBottom > obstacleTop && player.x > obstacleLeft && player.x < obstacleRight;
+
+            if (hits) {
+              if (darkStarInvincible) continue;
+
+              if (shieldTimer > 0) {
+                statusMessage = "Shield Active!";
+                statusTimer = 60;
+              } else {
+                loseLife();
+              }
+              break;
             }
           }
-        });
+        }
       }
 
       function loseLife() {
@@ -719,25 +1094,40 @@
           window.FarcadeSDK?.singlePlayer?.actions?.gameOver?.({
             score: Math.floor(distance),
           });
+
+          cancelAnimationFrame(loopId);
         }
       }
 
-      function handleBonuses() {
+      function clearAllBonuses() {
+        speedBoostTimer = 0;
+        darkBoostTimer = 0;
+        shieldTimer = 0;
+        hasShield = false;
+        darkStarInvincible = false;
+      }
+
+      function isNearBonus(obs) {
+        const bonusWidth = obs.size * 0.9;
+        const bonusHeight = obs.size * 0.9;
+
+        const playerTop = player.y - player.torsoLength - 80; // kafa dahil yukarı
+        const playerBottom = player.y + player.legLength + player.footSize;
+
+        return (
+          player.x > obs.x - bonusWidth / 2 &&
+          player.x < obs.x + bonusWidth / 2 &&
+          playerBottom > obs.y &&
+          playerTop < obs.y + bonusHeight
+        );
+      }
+
+      function handleBonuses(delta = 1 / 60) {
         obstacles.forEach((obs, index) => {
-          const isCoin =
-            obs.type === "coin" &&
-            Math.abs(obs.x - player.x) < obs.size * 0.9 &&
-            Math.abs(obs.y - player.y) < obs.size * 0.9;
-
-          const isStar =
-            obs.type === "star" &&
-            Math.abs(obs.x - player.x) < obs.size * 0.9 &&
-            Math.abs(obs.y - player.y) < obs.size * 0.9;
-
-          const isDarkStar =
-            obs.type === "dark_star" &&
-            Math.abs(obs.x - player.x) < obs.size * 0.9 &&
-            Math.abs(obs.y - player.y) < obs.size * 0.9;
+          const isCoin = obs.type === "coin" && isNearBonus(obs);
+          const isStar = obs.type === "star" && isNearBonus(obs);
+          const isDarkStar = obs.type === "dark_star" && isNearBonus(obs);
+          const isShield = obs.type === "shield" && isNearBonus(obs);
 
           if (isCoin) {
             playSound("coin");
@@ -745,50 +1135,133 @@
             bonusMessage = "Extra life!";
             bonusMessageTimer = 60;
             obstacles.splice(index, 1);
+            distance += 250;
           }
 
           if (isStar) {
+            clearAllBonuses();
             playSound("star");
-            speedBoostTimer = 500;
+            speedBoostTimer = 900;
             bonusMessage = "Star collected!";
             bonusMessageTimer = 60;
+            statusMessage = "Speed Reset!";
+            statusTimer = 100;
             obstacles.splice(index, 1);
+            distance += 100;
           }
 
           if (isDarkStar) {
+            clearAllBonuses();
             playSound("darkstar");
-            darkBoostTimer = 500;
+            darkBoostTimer = 600;
             darkBoostedSpeed = baseSpeed + Math.floor(obstacleCount / 5) * 0.6;
-            bonusMessage = "Dark Star! Speed Boost";
+            darkStarInvincible = true;
+            bonusMessage = "Dark Mode Activated!";
             bonusMessageTimer = 60;
+            statusMessage = "Speed Boost! + Invincible!";
+            statusTimer = 100;
             obstacles.splice(index, 1);
+            distance += 1000;
+          }
+
+          if (isShield) {
+            clearAllBonuses();
+            playSound("shield");
+            shieldTimer = 1200;
+            hasShield = true;
+            bonusMessage = "Shield On!";
+            bonusMessageTimer = 60;
+            statusMessage = "Protected!";
+            statusTimer = 100;
+            obstacles.splice(index, 1);
+            distance += 250;
           }
         });
 
+        // 🎯 BONUS ETKİLERİ zaman bazlı azaltma
         if (darkBoostTimer > 0) {
           gameSpeed = darkBoostedSpeed * 2;
-          darkBoostTimer--;
+          darkBoostTimer -= delta * 60;
+          if (darkBoostTimer <= 0) {
+            darkStarInvincible = false;
+            darkBoostTimer = 0;
+          }
         } else if (speedBoostTimer > 0) {
           gameSpeed = baseSpeed;
-          speedBoostTimer--;
+          speedBoostTimer -= delta * 60;
+          if (speedBoostTimer <= 0) speedBoostTimer = 0;
         } else {
-          gameSpeed = baseSpeed + Math.floor(obstacleCount / 5) * 0.6;
+          gameSpeed = baseSpeed + Math.floor(obstacleCount / 5) * 0.2;
+        }
+
+        if (shieldTimer > 0) {
+          shieldTimer -= delta * 60;
+          if (shieldTimer <= 0) {
+            shieldTimer = 0;
+            hasShield = false;
+          }
         }
       }
 
-      document.getElementById("start-button").addEventListener("click", () => {
-        document.getElementById("start-screen").style.display = "none";
-        window.FarcadeSDK?.singlePlayer?.actions?.ready?.();
+      function setStatus(stat, msg) {
+        statusMessage = stat;
+        statusTimer = 100;
+        bonusMessage = msg;
+        bonusMessageTimer = 60;
+      }
 
-        sounds.bgm.currentTime = 0;
-        sounds.bgm.play();
-        requestAnimationFrame(loop);
+      function showBonus(msg) {
+        bonusMessage = msg;
+        bonusMessageTimer = 60;
+      }
+
+      function updateBonusEffects(delta) {
+        if (darkBoostTimer > 0) {
+          gameSpeed = darkBoostedSpeed * 2;
+          darkBoostTimer -= delta * 60;
+          if (darkBoostTimer <= 0) darkStarInvincible = false;
+        } else if (speedBoostTimer > 0) {
+          gameSpeed = baseSpeed;
+          speedBoostTimer -= delta * 60;
+        } else {
+          gameSpeed = baseSpeed + Math.floor(obstacleCount / 5) * 0.6;
+        }
+
+        if (shieldTimer > 0) {
+          shieldTimer -= delta * 60;
+          if (shieldTimer <= 0) hasShield = false;
+        }
+      }
+
+      // Hints label tıklanınca guide screen aç
+      document.getElementById("hint-label").addEventListener("click", () => {
+        document.getElementById("guide-screen").style.display = "block";
+        document.getElementById("start-screen").style.display = "none";
       });
 
+      // Guide screen'deki "Back" tuşuna tıklanınca start screen geri gelsin
+      document.getElementById("close-guide").addEventListener("click", () => {
+        document.getElementById("guide-screen").style.display = "none";
+        document.getElementById("start-screen").style.display = "block";
+      });
+
+      // Start the Run tıklanınca oyunu başlat
+      document.getElementById("start-run-label").addEventListener("click", () => {
+        document.getElementById("start-screen").style.display = "none";
+        window.FarcadeSDK?.singlePlayer?.actions?.ready?.();
+        sounds.bgm.currentTime = 0;
+        sounds.bgm.play();
+        lastTime = performance.now();
+        if (loopId) cancelAnimationFrame(loopId);
+        loopId = requestAnimationFrame(loop);
+      });
+
+      // Play again sinyali gelirse oyunu resetle
       window.FarcadeSDK?.on?.("play_again", () => {
         resetGame();
         document.getElementById("start-screen").style.display = "none";
-        requestAnimationFrame(loop);
+        lastTime = performance.now();
+        loopId = requestAnimationFrame(loop);
       });
 
       window.FarcadeSDK?.on?.("toggle_mute", (data) => {
@@ -798,30 +1271,67 @@
       });
 
       function resetGame() {
-        lives = 3;
+        lives = 1;
         distance = 0.1;
         isGameOver = false;
         player.y = 480;
         jumpCount = 0;
+        lastJumpCount = 0;
         obstacleCount = 0;
         gameSpeed = baseSpeed;
         obstacles.length = 0;
+
         ghostOpacity = 1;
         rebirthTimer = 0;
+
+        shieldTimer = 0;
+        hasShield = false;
+
+        bonusTimer = 0;
+        difficultyLevel = 1;
+        obstacleDifficultyTimer = 0;
+
         sounds.bgm.currentTime = 0;
         sounds.bgm.play();
+
+        timeOfDay = 0;
+        isDay = true;
+
+        speedBoostTimer = 0;
         darkBoostTimer = 0;
+        statusMessage = "";
+
+        darkBoostedSpeed = 8;
+
+        holeFallData = null;
+        player.fallingInHole = false;
+        showTribune = false;
+        currentTribune = 1;
+        nextTribuneDistance = 5;
+        tribuneTimer = 0;
+        tribuneX = 0;
+        tribune2X = 0;
+        roadType = 1;
+        nextRoadSwitch = 250;
+        let roadScrollX = 0;
+        roadScrollX += 1.5;
       }
 
-      function loop() {
-        if (isGameOver) return;
-        if (lives <= 0) {
-          isGameOver = true;
+      function loop(currentTime) {
+        const delta = (currentTime - lastTime) / 1000; // saniye
+        lastTime = currentTime;
 
-          window.FarcadeSDK?.singlePlayer?.actions?.gameOver?.({
-            score: Math.floor(distance),
-          });
-        }
+        if (isGameOver) return;
+        obstacleTimer -= delta * 60;
+        comboCooldownTimer -= delta * 60;
+        rebirthTimer -= delta * 60;
+        damageCooldown -= delta * 60;
+        statusTimer -= delta * 60;
+
+        if (comboCooldownTimer < 0) comboCooldownTimer = 0;
+        if (rebirthTimer < 0) rebirthTimer = 0;
+        if (damageCooldown < 0) damageCooldown = 0;
+        if (statusTimer < 0) statusTimer = 0;
 
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         drawSky();
@@ -829,37 +1339,86 @@
         drawMoon();
         drawClouds();
         drawBirds();
-        drawCrowd();
+        drawTribunes(delta);
         drawRoad();
+        if (!showTribune && distance >= nextTribuneDistance) {
+          showTribune = true;
+          tribuneTimer = 600;
+          currentTribune = (currentTribune % tribunes.length) + 1;
+          nextTribuneDistance = distance + (currentTribune === 1 ? 100 : 50);
+
+          // ✅ Yol değişimini tribune ile senkron yap
+          roadType = 1 + Math.floor(Math.random() * 3);
+
+          sounds.crowd.currentTime = 0;
+          sounds.crowd.play();
+        }
+
         handleJump();
-        drawHead();
-        drawBonusMessage();
-        timeOfDay += 1 / (60 * 100); // 100 saniyede 1 tur
+        if (isBackflipping) {
+          backflipAngle += 20;
+          if (backflipAngle >= 360) {
+            backflipAngle = 0;
+            isBackflipping = false;
+          }
+        }
+
+        if (player.fallingInHole && holeFallData) {
+          player.y += holeFallData.velocity;
+          holeFallData.velocity += 0.5;
+          holeFallData.angle += holeFallData.rotationSpeed;
+
+          ctx.save();
+          ctx.translate(player.x, player.y);
+          ctx.rotate(holeFallData.angle);
+          ctx.restore();
+
+          if (player.y > canvas.height + 100) {
+            loseLife();
+            player.fallingInHole = false;
+            player.y = 480;
+            holeFallData = null;
+          }
+        }
+
+        drawBonusMessage(delta); // ✅ delta parametresi eklendi
+        timeOfDay += 1 / (60 * 100);
         if (timeOfDay >= 1) timeOfDay = 0;
+        isDay = timeOfDay < 0.6;
 
-        isDay = timeOfDay < 0.6; // 0.6'ya kadar gündüz, sonrası gece
-
-        const torsoTopY = drawTorso();
-        drawArms(torsoTopY);
-        drawLegs();
+        drawCharacter();
         drawObstacles();
         drawScore();
+        drawStatusMessage();
 
         checkCollision();
-        handleBonuses();
+        handleBonuses(delta);
 
-        distance += 0.01* gameSpeed;
+        distance += delta * gameSpeed * 2;
+        obstacleDifficultyTimer += delta;
+        if (obstacleDifficultyTimer >= 10) {
+          difficultyLevel++;
+          gameSpeed = baseSpeed + difficultyLevel * 0.5;
+          obstacleDifficultyTimer = 0;
+        }
+
         angle += 0.1;
-        if (damageCooldown > 0) damageCooldown--;
 
         if (rebirthTimer > 0) {
-          ghostOpacity = (Math.sin(rebirthTimer / 5) + 1) / 2; // flicker 0–1
-          rebirthTimer--;
+          ghostOpacity = (Math.sin(rebirthTimer / 5) + 1) / 2;
         } else {
           ghostOpacity = 1;
           isBlinking = false;
         }
-        requestAnimationFrame(loop);
+
+        if (comboCooldownTimer > 0 && --comboCooldownTimer === 0) {
+          recentlySpawnedCombo = false;
+        }
+
+        if (shieldTimer > 0) shieldTimer--;
+
+        // ✅ Ana düzeltme — sadece bu satır
+        loopId = requestAnimationFrame(loop);
       }
 
       document.addEventListener("keydown", (e) => {
@@ -869,15 +1428,51 @@
           jumpCount++;
           playSound("jump");
         }
+
+        if (jumpCount === 2 && lastJumpCount < 2) {
+          isBackflipping = true;
+          backflipAngle = 0;
+        }
+
+        lastJumpCount = jumpCount;
       });
 
-      canvas.addEventListener("touchstart", () => {
+      document.getElementById("start-run-label").addEventListener("click", () => {
+        document.getElementById("start-screen").style.display = "none";
+        window.FarcadeSDK?.singlePlayer?.actions?.ready?.();
+        sounds.bgm.currentTime = 0;
+        sounds.bgm.play();
+        lastTime = performance.now();
+        if (loopId) cancelAnimationFrame(loopId);
+        loopId = requestAnimationFrame(loop);
+      });
+
+      function handleJumpLogic() {
         if (jumpCount < maxJump) {
           player.isJumping = true;
           player.velocityY = -15;
           jumpCount++;
           playSound("jump");
         }
+
+        if (jumpCount === 2 && lastJumpCount < 2) {
+          isBackflipping = true;
+          backflipAngle = 0;
+        }
+
+        lastJumpCount = jumpCount;
+      }
+
+      let lastTouchTime = 0;
+
+      canvas.addEventListener("touchstart", () => {
+        lastTouchTime = Date.now();
+        handleJumpLogic();
+      });
+
+      canvas.addEventListener("click", () => {
+        if (Date.now() - lastTouchTime < 500) return; // Çift zıplama olmasın
+        handleJumpLogic();
       });
     </script>
   </body>
