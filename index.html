@@ -2,6 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
     <title>Farcade Boy</title>
     <style>
       * {
@@ -16,6 +17,7 @@
         align-items: center;
         height: 100vh;
         background: #111;
+        overflow: hidden;
         font-family: "Segoe UI", sans-serif;
       }
 
@@ -105,7 +107,8 @@
         left: 0;
         width: 100%;
         height: 100%;
-        background: linear-gradient(to bottom, #aeefff, #ffffff);
+        background: rgba(255, 255, 255, 0.4); /* translucent overlay */
+        backdrop-filter: blur(4px); /* softens image behind */
         z-index: 12;
         padding: 0 20px;
         font-size: 14px;
@@ -144,19 +147,45 @@
       </div>
 
       <div id="guide-screen" style="display: none">
-        <div class="poster-box">
-          <h2>🎮 How to Play</h2>
-          <p>
-            🕹 Tap / Click / Space = Jump<br />
-            🔁 Double tap = Backflip + Double Jump<br /><br />
+        <div
+          class="poster-box"
+          style="
+            background: rgba(255, 255, 255, 0.85);
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+            max-width: 340px;
+          "
+        >
+          <h2 style="font-size: 26px; margin-bottom: 12px; color: #222; text-shadow: 1px 1px 2px #fff">
+            🎮 How to Play
+          </h2>
+          <p style="font-size: 14px; line-height: 1.6; color: #333">
+            🕹 <b>Tap / Click / Space</b> = Jump<br />
+            🔁 <b>Double Tap</b> = Backflip & Double Jump<br /><br />
             🌟 <b>Bonuses:</b><br />
-            ⭐ Star = Speed Reset<br />
-            ⚫ Dark Star = x2 Speed + Invincible<br />
-            🛡 Shield = Protection<br />
-            🎮 Farcade Logo = Extra Life<br /><br />
-            ❗ New bonus overrides old one!
+            ⭐ <b>Star</b> = Speed Reset<br />
+            ⚫ <b>Dark Star</b> = x2 Speed + Invincible<br />
+            🛡 <b>Shield</b> = Temporary Protection<br />
+            🎮 <b>Farcade Logo</b> = 1-Up (Extra Life)<br /><br />
+            ⚠️ Each new bonus <b>replaces</b> the last!
           </p>
-          <button id="close-guide" class="btn btn-primary">Back</button>
+          <button
+            id="close-guide"
+            style="
+              margin-top: 10px;
+              font-size: 14px;
+              padding: 6px 12px;
+              border: none;
+              border-radius: 6px;
+              background: #222;
+              color: #fff;
+              cursor: pointer;
+              box-shadow: 0 0 6px rgba(0, 0, 0, 0.3);
+            "
+          >
+            Back
+          </button>
         </div>
       </div>
     </div>
@@ -256,11 +285,12 @@
       ];
 
       const maxJump = 2;
+      const jumpVelocity = -14;
       let jumpCount = 0;
       let lastJumpCount = 0;
       let isBackflipping = false;
       let backflipAngle = 0;
-      let gravity = 0.46;
+      let gravity = 0.4;
 
       // 💥 Durumlar & Can
       let lives = 1;
@@ -268,6 +298,7 @@
       let damageCooldown = 0;
       let rebirthTimer = 0;
       let ghostOpacity = 1;
+      let tribuneOpacity = 0;
 
       // 🛡️ Bonus Mekanikleri
       let bonusTimer = 0;
@@ -586,36 +617,51 @@
         ctx.fill();
       }
 
+      function updateRoadTypeByTime() {
+        if (timeOfDay < 0.4) {
+          roadType = 3; // sabah: çimenli
+        } else if (timeOfDay < 0.8) {
+          roadType = 1; // akşam: toprak
+        } else {
+          roadType = 2; // gece: taşlı
+        }
+      }
+
       function drawTribunes(delta) {
         if (!delta || typeof delta !== "number" || !showTribune) return;
 
         const img = tribunes[(currentTribune - 1) % tribunes.length];
         if (!img.complete) return;
 
-        const speed = delta * 60 * 4;
-        const y = 275;
-        const h = 250;
+        const h = 280;
+        const y = 525 - h;
+        const tribuneX = 0;
 
-        if (currentTribune % 2 === 0) {
-          tribune2X += speed;
-          if (tribune2X >= canvas.width) tribune2X = 0;
-          ctx.drawImage(img, tribune2X - canvas.width, y, canvas.width, h);
-          ctx.drawImage(img, tribune2X, y, canvas.width, h);
-        } else {
-          tribuneX += speed;
-          if (tribuneX >= canvas.width) tribuneX = 0;
-          ctx.drawImage(img, tribuneX - canvas.width, y, canvas.width, h);
-          ctx.drawImage(img, tribuneX, y, canvas.width, h);
-        }
+        // Oyuncu geçerken fade etkisi (yaklaşma ve uzaklaşma)
+        const playerScreenX = canvas.width * 0.5;
+        const tribuneCenter = canvas.width * 0.5;
+        const relativeDistance = Math.abs(playerScreenX - tribuneCenter);
+        const maxFadeDist = canvas.width * 0.5;
+        tribuneOpacity = 1 - relativeDistance / maxFadeDist;
+        tribuneOpacity = Math.max(0, Math.min(1, tribuneOpacity));
 
-        tribuneTimer -= delta * 60;
-        if (tribuneTimer <= 0) {
+        ctx.save();
+        ctx.globalAlpha = tribuneOpacity;
+        ctx.drawImage(img, tribuneX, y, canvas.width, h);
+        ctx.restore();
+
+        if (distance > nextTribuneDistance + 8) {
           showTribune = false;
           nextTribuneDistance = distance + (currentTribune === 1 ? 100 : 50);
-          roadType = 1 + Math.floor(Math.random() * 3); // 🌄 yeni yol tipi
           sounds.crowd.pause();
           sounds.crowd.currentTime = 0;
         }
+
+        updateRoadTypeByTime();
+      }
+
+      function rand(x, y) {
+        return (Math.sin(x * 12.9898 + y * 78.233) * 43758.5453) % 1;
       }
 
       function drawRoad() {
@@ -641,48 +687,75 @@
           const topH = 30;
           const bottomH = height - topH;
 
-          if (roadType === 1) {
-            // Toprak Yol
-            ctx.fillStyle = "#e6d3b3";
-            ctx.fillRect(seg.x, topY, seg.width, topH);
+          const worldOffset = Math.floor(distance * 100);
 
+          if (roadType === 1) {
+            ctx.fillStyle = "#e2cfa4";
+            ctx.fillRect(seg.x, topY, seg.width, topH);
+            for (let i = 0; i < seg.width; i += 5) {
+              const rx = rand(worldOffset + seg.x + i, topY);
+              ctx.fillStyle = rx < 0.5 ? "#cbb38c" : "#a38d6f";
+              ctx.beginPath();
+              ctx.arc(seg.x + i, topY + rx * topH, 0.6, 0, Math.PI * 2);
+              ctx.fill();
+            }
             const grad = ctx.createLinearGradient(seg.x, topY + topH, seg.x, topY + height);
-            grad.addColorStop(0, "#d6c2a2");
-            grad.addColorStop(1, "#b49a7c");
+            grad.addColorStop(0, "#b59871");
+            grad.addColorStop(1, "#826448");
             ctx.fillStyle = grad;
             ctx.fillRect(seg.x, topY + topH, seg.width, bottomH);
           } else if (roadType === 2) {
-            // Taş Yol
-            ctx.fillStyle = "#aaa";
+            // Taş Yol - sabit desenli, oyun akışıyla senkron
+            ctx.fillStyle = "#c87d5a";
             ctx.fillRect(seg.x, topY, seg.width, topH);
-            for (let i = 0; i < seg.width; i += 24) {
-              const blockW = 12 + Math.random() * 10;
-              const h = 20 + Math.random() * 5;
-              ctx.fillStyle = "#999";
-              ctx.fillRect(seg.x + i, topY, blockW, h);
+
+            const stoneW = 16;
+            const stoneH = 10;
+            const mortar = 2;
+
+            for (let x = seg.x - (seg.x % stoneW); x < seg.x + seg.width; x += stoneW) {
+              for (let y = topY; y < topY + topH; y += stoneH) {
+                const wx = Math.floor((worldOffset + x) / stoneW) * stoneW;
+                const wy = Math.floor(y / stoneH) * stoneH;
+                const offset = (Math.floor((wx + wy) / 20) % 2) * (stoneW / 2);
+                const w = stoneW - mortar + rand(wx, wy) * 2;
+                const h = stoneH - mortar + rand(wx + 40, wy) * 2;
+
+                ctx.beginPath();
+                ctx.fillStyle = `hsl(15, 40%, ${45 + rand(wx, wy) * 25}%)`; // kırmızımsı kahve ton
+                ctx.roundRect(wx + offset, wy, w, h, 2);
+                ctx.fill();
+                ctx.strokeStyle = "#6e5b4b";
+                ctx.lineWidth = 0.4;
+                ctx.stroke();
+              }
             }
 
             const grad = ctx.createLinearGradient(seg.x, topY + topH, seg.x, topY + height);
-            grad.addColorStop(0, "#999");
-            grad.addColorStop(1, "#888");
+            grad.addColorStop(0, "#b6664d"); // açık tuğla rengi
+            grad.addColorStop(1, "#8e3e2b"); // koyu kiremit
             ctx.fillStyle = grad;
             ctx.fillRect(seg.x, topY + topH, seg.width, bottomH);
           } else if (roadType === 3) {
-            // Çimenli Yol
-            ctx.fillStyle = "#88b94d";
+            const grassTop = ctx.createLinearGradient(seg.x, topY, seg.x, topY + topH);
+            grassTop.addColorStop(0, "#b0d472");
+            grassTop.addColorStop(1, "#6ea83d");
+            ctx.fillStyle = grassTop;
             ctx.fillRect(seg.x, topY, seg.width, topH);
 
-            for (let i = 0; i < seg.width; i += 4) {
-              ctx.strokeStyle = "#6fa13d";
+            for (let i = 0; i < seg.width; i += 3) {
+              const x = seg.x + i;
+              const bladeHeight = 6 + rand(worldOffset + x, topY) * 4;
+              ctx.strokeStyle = rand(worldOffset + x, topY) < 0.5 ? "#6ea83d" : "#4f8020";
               ctx.beginPath();
-              ctx.moveTo(seg.x + i, topY + topH);
-              ctx.lineTo(seg.x + i, topY + topH - 5 - Math.random() * 10);
+              ctx.moveTo(x, topY + topH);
+              ctx.lineTo(x, topY + topH - bladeHeight);
               ctx.stroke();
             }
 
             const grad = ctx.createLinearGradient(seg.x, topY + topH, seg.x, topY + height);
-            grad.addColorStop(0, "#6f9c3b");
-            grad.addColorStop(1, "#557a2f");
+            grad.addColorStop(0, "#619c3b");
+            grad.addColorStop(1, "#3b6823");
             ctx.fillStyle = grad;
             ctx.fillRect(seg.x, topY + topH, seg.width, bottomH);
           }
@@ -710,30 +783,54 @@
 
           switch (obs.type) {
             case "circle":
-              ctx.fillStyle = obs.color;
+              const grad = ctx.createRadialGradient(obs.x, 480, obs.size * 0.2, obs.x, 480, obs.size / 2);
+              grad.addColorStop(0, obs.color);
+              grad.addColorStop(1, "#111"); // fade to dark
+              ctx.fillStyle = grad;
+              ctx.shadowColor = obs.color;
+              ctx.shadowBlur = 15;
               ctx.beginPath();
               ctx.arc(obs.x, 480, obs.size / 2, 0, Math.PI * 2);
               ctx.fill();
+              ctx.shadowBlur = 0;
               break;
 
             case "triangle":
-              ctx.fillStyle = obs.color;
+              const triangleGrad = ctx.createLinearGradient(obs.x, 500 - obs.size, obs.x, 500);
+              triangleGrad.addColorStop(0, obs.color);
+              triangleGrad.addColorStop(1, "#111");
+              ctx.fillStyle = triangleGrad;
+              ctx.shadowColor = obs.color;
+              ctx.shadowBlur = 15;
               ctx.beginPath();
               ctx.moveTo(obs.x, 500 - obs.size);
               ctx.lineTo(obs.x - obs.size / 2, 500);
               ctx.lineTo(obs.x + obs.size / 2, 500);
               ctx.closePath();
               ctx.fill();
+              ctx.shadowBlur = 0;
               break;
 
             case "square":
-              ctx.fillStyle = obs.color;
+              const squareGrad = ctx.createLinearGradient(obs.x, 500 - obs.size, obs.x, 500);
+              squareGrad.addColorStop(0, obs.color);
+              squareGrad.addColorStop(1, "#111");
+              ctx.fillStyle = squareGrad;
+              ctx.shadowColor = obs.color;
+              ctx.shadowBlur = 15;
               ctx.fillRect(obs.x - obs.size / 2, 500 - obs.size, obs.size, obs.size);
+              ctx.shadowBlur = 0;
               break;
 
             case "tower":
-              ctx.fillStyle = obs.color;
+              const towerGrad = ctx.createLinearGradient(obs.x, 500 - obs.height, obs.x, 500);
+              towerGrad.addColorStop(0, obs.color);
+              towerGrad.addColorStop(1, "#111");
+              ctx.fillStyle = towerGrad;
+              ctx.shadowColor = obs.color;
+              ctx.shadowBlur = 15;
               ctx.fillRect(obs.x - obs.size / 2, 500 - obs.height, obs.size, obs.height);
+              ctx.shadowBlur = 0;
               break;
 
             case "coin":
@@ -1424,7 +1521,7 @@
       document.addEventListener("keydown", (e) => {
         if (e.code === "Space" && jumpCount < maxJump) {
           player.isJumping = true;
-          player.velocityY = -15;
+          player.velocityY = jumpVelocity;
           jumpCount++;
           playSound("jump");
         }
@@ -1447,10 +1544,14 @@
         loopId = requestAnimationFrame(loop);
       });
 
+      const doubleJumpWindow = 1000;
+      let lastJumpTime = 0;
+
       function handleJumpLogic() {
+        const now = Date.now();
         if (jumpCount < maxJump) {
           player.isJumping = true;
-          player.velocityY = -15;
+          player.velocityY = jumpVelocity;
           jumpCount++;
           playSound("jump");
         }
@@ -1458,20 +1559,39 @@
         if (jumpCount === 2 && lastJumpCount < 2) {
           isBackflipping = true;
           backflipAngle = 0;
-        }
 
-        lastJumpCount = jumpCount;
+          lastJumpTime = now;
+          lastJumpCount = jumpCount;
+        }
       }
 
       let lastTouchTime = 0;
+      let touchStartTime = 0;
+      const tapThreshold = 400;
+      const clickDelay = 500;
+
+      document.addEventListener(
+        "touchmove",
+        (e) => {
+          e.preventDefault();
+        },
+        { passive: false },
+      );
 
       canvas.addEventListener("touchstart", () => {
-        lastTouchTime = Date.now();
-        handleJumpLogic();
+        touchStartTime = Date.now();
+      });
+
+      canvas.addEventListener("touchend", () => {
+        const now = Date.now();
+        if (now - touchStartTime <= tapThreshold) {
+          lastTouchTime = now;
+          handleJumpLogic();
+        }
       });
 
       canvas.addEventListener("click", () => {
-        if (Date.now() - lastTouchTime < 500) return; // Çift zıplama olmasın
+        if (Date.now() - lastTouchTime < 1000) return; // Çift zıplama olmasın
         handleJumpLogic();
       });
     </script>
